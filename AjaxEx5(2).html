@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input id="numer" placeholder="Номер страницы">
+    <input id="lymit" placeholder="Лимит">
+    <button id="button">Запрос</button>
+    <p id="result"></p>
+    <div id="images"></div>
+
+    <script>
+        const btn = document.getElementById('button');
+        const result = document.getElementById('result');
+        const imagesContainer = document.getElementById('images');
+
+        btn.addEventListener('click', processing);
+
+        function processing() {
+            const numer = document.getElementById('numer').value;
+            const lymit = document.getElementById('lymit').value;
+
+            if(lymit < 1 || lymit > 10 || !isNumeric(lymit) || numer < 1 || numer > 10 || !isNumeric(numer)){
+                result.innerHTML = 'Номер страницы и лимит вне диапазона от 1 до 10';
+            }
+            else{
+                useRequest(`https://jsonplaceholder.typicode.com/photos?_page=${numer}&_limit=${lymit}`, displayResult);
+            }
+        }
+
+        function useRequest(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+
+            xhr.onload = function() {
+                if (xhr.status != 200) {
+                    console.log('Статус ответа: ', xhr.status);
+                } else {
+                    const result = JSON.parse(xhr.response);
+                    if (callback) {
+                        callback(result);
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                console.log('Ошибка! Статус ответа: ', xhr.status);
+            };
+
+            xhr.send();
+        }
+
+        function displayResult(apiData) {
+            let cards = '';
+            for (let i = 0; i < apiData.length; i++) {
+                cards += `<img src="${apiData[i].url}" alt="image-${i+1}">`;
+            }
+            imagesContainer.innerHTML = cards;
+        }
+
+        function isNumeric(value) {
+            return /^\d+$/.test(value);
+        }
+
+       
+        function displayResult(apiData) {
+            let cards = '';
+            for (let i = 0; i < apiData.length; i++) {
+                cards += `<img src="${apiData[i].url}" alt="image-${i+1}">`;
+            }
+            imagesContainer.innerHTML = cards;
+
+                localStorage.setItem('apiData', JSON.stringify(apiData));
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const storedData = localStorage.getItem('apiData');
+                if(storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    displayResult(parsedData);
+                }
+            });
+    </script>
+</body>
+</html>
